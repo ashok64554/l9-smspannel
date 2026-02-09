@@ -208,13 +208,9 @@ class WAFileUploadController extends Controller
             if($response->ok())
             {
                 $uploadData = $response->json();
-
-                WhatsAppFile::where('id', $waFile->id)
-                    ->update([
-                        'wa_file_id' => $response['id'] ?? null
-                    ]);
+                $waFile->wa_file_id = $waFile->id;
+                $waFile->save();
             }
-            $waFile['wa_file_id'] = $response['id'] ?? null;
 
             return response()->json(prepareResult(false, $waFile, trans('translate.created'), $this->intime), config('httpcodes.created')); 
         } catch (\Throwable $e) {
