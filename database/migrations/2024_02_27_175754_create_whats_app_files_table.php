@@ -19,12 +19,13 @@ return new class extends Migration
             $table->unsignedBigInteger('user_id');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
 
+            $table->unsignedBigInteger('configuration_id')->nullable();
             $table->string('file_path');
             $table->string('file_type', 50);
             $table->string('mime_type', 50);
             $table->integer('file_size');
             $table->string('file_caption')->nullable();
-
+            $table->string('wa_file_id')->nullable();
             $table->timestamps();
         });
     }

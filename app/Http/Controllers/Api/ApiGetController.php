@@ -1680,8 +1680,11 @@ class ApiGetController extends Controller
                 }
                 $file_path = @$request->message['content']['template']['media']['url'];
                 $titleOrFileName = @$request->message['content']['template']['media']['filename'];
+               
+                $wa_file_id = WhatsAppFile::where('file_path', 'LIKE', '%' . basename(parse_url($file_path, PHP_URL_PATH)))
+                ->value('wa_file_id');
 
-                $header = prapareWAComponent('header', $file_path, $parameter_format, null, $template_type, $media_type, $titleOrFileName,$latitude,$longitude,$location_name,$location_address);
+                $header = prapareWAComponent('header', $file_path, $parameter_format, null, $template_type, $media_type, $titleOrFileName,$latitude,$longitude,$location_name,$location_address,$wa_file_id);
             }
             else
             {

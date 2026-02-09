@@ -514,7 +514,7 @@ class WASendMessageController extends Controller
                                     $location_address = $request->location_address;
                                 }
                                 $titleOrFileName = $request->file_caption;
-                                $header = prapareWAComponent('header', $request->upload_wa_file_path, $parameter_format, null, $template_type, $media_type, $titleOrFileName,$latitude,$longitude,$location_name,$location_address);
+                                $header = prapareWAComponent('header', $request->upload_wa_file_path, $parameter_format, null, $template_type, $media_type, $titleOrFileName,$latitude,$longitude,$location_name,$location_address,$request->wa_file_id);
                             }
                             else
                             {

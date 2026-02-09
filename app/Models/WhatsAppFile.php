@@ -12,11 +12,13 @@ class WhatsAppFile extends Model
 
     protected $fillable = [
         'user_id',
+        'configuration_id',
         'file_path',
         'file_type',
         'mime_type',
         'file_size',
-        'file_caption'
+        'file_caption',
+        'wa_file_id',
     ];
 
     public function user()

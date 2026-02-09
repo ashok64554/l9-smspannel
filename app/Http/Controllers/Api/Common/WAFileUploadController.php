@@ -174,6 +174,7 @@ class WAFileUploadController extends Controller
             // Create record
             $waFile = new WhatsAppFile;
             $waFile->user_id = $request->user_id;
+            $waFile->configuration_id = $request->configuration_id;
             $waFile->file_path = $filePath;
             $waFile->file_type = $request->file_type;
             $waFile->mime_type = $mimeType;
@@ -182,53 +183,38 @@ class WAFileUploadController extends Controller
             $waFile->save();
 
             // file upload wa server
-            /*
-            $user = User::find($request->user_id);
-            $wa_config = whatsAppConfiguration($request->user_id);
-
+            $wa_config = whatsAppConfiguration($request->configuration_id,$request->user_id);
+           
             // Your API Version
             $apiVersion = @$wa_config->app_version; // Replace with the desired version
+            $phoneNumberId = @$wa_config->sender_number; 
             // Your User Access Token
-            $userAccessToken = @$wa_config->access_token;
+            $userAccessToken = base64_decode($wa_config->access_token); 
             $appId = @$wa_config->app_id;
             
             $contentType = mime_content_type($filePath);
-
+          
             // Step 1: Upload the media file
-            $uploadUrl = "https://graph.facebook.com/{$apiVersion}/{$appId}/uploads";
-            $uploadUrl .= "?file_length={$fileSize}&file_type={$mimeType}";;
-            $uploadResponse = Http::withHeaders([
-                'Authorization' => 'Bearer ' . $userAccessToken,
-            ])->post($uploadUrl);
+           $response = Http::withToken($userAccessToken)
+                ->attach(
+                    'file',
+                    fopen($filePath, 'r'),
+                    basename($filePath)
+                )
+                ->post("https://graph.facebook.com/{$apiVersion}/{$phoneNumberId}/media", [
+                    'messaging_product' => 'whatsapp'
+                ]);
 
-            // Decode the JSON response
-            $uploadData = $uploadResponse->json();
-             
-            // Extract the upload ID
-            $sessionId = @$uploadData['id'];
-           
-            // Step 2: Get information about the uploaded file using the session ID
-            $sessionEndpoint = "https://graph.facebook.com/{$apiVersion}/{$sessionId}";
+            if($response->ok())
+            {
+                $uploadData = $response->json();
 
-            $headers = [
-                'Authorization' => 'Bearer ' . $userAccessToken,
-                'Content-Type' => $contentType, // Adjust based on your image format
-            ];
-
-            $sessionResponse = Http::withHeaders($headers)->attach(
-                'attachment', $binaryImageData,$fileName
-            )->post($sessionEndpoint);
-
-            // Decode the JSON response
-            $sessionData = $sessionResponse->json();
-            return $sessionData;
-            if($sessionResponse->ok()){
-                return response()->json(prepareResult(false, $sessionData, trans('translate.created'), $this->intime), config('httpcodes.created'));
-
-            } else{
-                 return response()->json(prepareResult(true, $sessionData, trans('translate.something_went_wrong'), $this->intime), config('httpcodes.internal_server_error'));
+                WhatsAppFile::where('id', $waFile->id)
+                    ->update([
+                        'wa_file_id' => $response['id'] ?? null
+                    ]);
             }
-            */
+            $waFile['wa_file_id'] = $response['id'] ?? null;
 
             return response()->json(prepareResult(false, $waFile, trans('translate.created'), $this->intime), config('httpcodes.created')); 
         } catch (\Throwable $e) {
@@ -270,6 +256,37 @@ class WAFileUploadController extends Controller
                 $whats_app_file->where('user_id', auth()->id());
             }
             $whats_app_file = $whats_app_file->where('id', $id)->first();
+
+            // ✅ DELETE FROM WHATSAPP META SERVER
+            if(!empty($whats_app_file->wa_file_id))
+            {
+                $wa_config = whatsAppConfiguration(
+                    $whats_app_file->configuration_id,
+                    $whats_app_file->user_id
+                );
+
+                $apiVersion     = $wa_config->app_version; // example v19.0
+                $accessToken    = base64_decode($wa_config->access_token);
+                $phoneNumberId  = $wa_config->sender_number;
+
+                // ✅ Correct URL with phone_number_id
+                $url = "https://graph.facebook.com/{$apiVersion}/{$whats_app_file->wa_file_id}";
+                
+                $response = Http::withToken($accessToken)
+                    ->delete($url, [
+                        'phone_number_id' => $phoneNumberId
+                    ]);
+
+                \Log::info('WhatsApp delete response', [
+                    'url' => $url,
+                    'response' => $response->json()
+                ]);
+
+                if($response->failed())
+                {
+                    \Log::error('WhatsApp media delete failed', $response->body());
+                }
+            }
             if($whats_app_file)
             {
                 if(file_exists($whats_app_file->file_path))

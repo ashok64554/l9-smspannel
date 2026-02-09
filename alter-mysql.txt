@@ -30,6 +30,15 @@ composer require beyondcode/laravel-websockets
 
 17. chatbot crud apis
 
+--------------Sonam-------------------------------------
+18.#for wa media uplaod response-- ID
+alter table add clm in whats_app_files table
+
+ALTER TABLE `whats_app_files` ADD `wa_file_id` VARCHAR(191) NULL AFTER `file_caption`;
+
+ALTER TABLE `whats_app_files` ADD `configuration_id` BIGINT NULL AFTER `user_id`;
+
+
 
 
 

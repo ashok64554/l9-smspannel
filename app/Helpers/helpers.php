@@ -2598,7 +2598,7 @@ function getWATemplateType($value=null)
     return $templateType;
 }
 
-function prapareWAComponent($type, $variables, $parameter_format, $parameter_names=null, $template_type=null, $media_type=null, $titleOrFileName=null,$latitude=null,$longitude=null,$location_name=null,$location_address=null)
+function prapareWAComponent($type, $variables, $parameter_format, $parameter_names=null, $template_type=null, $media_type=null, $titleOrFileName=null,$latitude=null,$longitude=null,$location_name=null,$location_address=null,$wa_file_id=null)
 {
     if($template_type=='MEDIA')
     {
@@ -2610,38 +2610,76 @@ function prapareWAComponent($type, $variables, $parameter_format, $parameter_nam
         {
             $link = env('APP_URL').'/'.$variables;
         }
+
+        if(!empty($wa_file_id)){
+            if($media_type=='document')
+            {
+                $parameter[] = [
+                    'type' => $media_type,
+                    $media_type => [
+                        'id' => $wa_file_id,
+                        'filename' => $titleOrFileName
+                    ]
+                ];
+            }
+            elseif($media_type=='location')
+            {
+                $parameter[] = [
+                    'type' => $media_type,
+                    $media_type => [
+                        'latitude' => $latitude,
+                        'longitude' => $longitude,
+                        'name' => $location_name,
+                        'address' => $location_address
+                    ]
+                ];
+            }
+            else
+            {
+                $parameter[] = [
+                    'type' => $media_type,
+                    $media_type => [
+                        'id' => $wa_file_id
+                    ]
+                ];
+            }
+
+        } else {
+            if($media_type=='document')
+            {
+                $parameter[] = [
+                    'type' => $media_type,
+                    $media_type => [
+                        'link' => $link,
+                        'filename' => $titleOrFileName
+                    ]
+                ];
+            }
+            elseif($media_type=='location')
+            {
+                $parameter[] = [
+                    'type' => $media_type,
+                    $media_type => [
+                        'latitude' => $latitude,
+                        'longitude' => $longitude,
+                        'name' => $location_name,
+                        'address' => $location_address
+                    ]
+                ];
+            }
+            else
+            {
+                $parameter[] = [
+                    'type' => $media_type,
+                    $media_type => [
+                        'link' => $link
+                    ]
+                ];
+            }
+
+        }
         
-        if($media_type=='document')
-        {
-            $parameter[] = [
-                'type' => $media_type,
-                $media_type => [
-                    'link' => $link,
-                    'filename' => $titleOrFileName
-                ]
-            ];
-        }
-        elseif($media_type=='location')
-        {
-            $parameter[] = [
-                'type' => $media_type,
-                $media_type => [
-                    'latitude' => $latitude,
-                    'longitude' => $longitude,
-                    'name' => $location_name,
-                    'address' => $location_address
-                ]
-            ];
-        }
-        else
-        {
-            $parameter[] = [
-                'type' => $media_type,
-                $media_type => [
-                    'link' => $link
-                ]
-            ];
-        }
+        
         
         $componentPrapare = [
             [
