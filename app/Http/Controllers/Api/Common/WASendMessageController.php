@@ -140,6 +140,7 @@ class WASendMessageController extends Controller
         }
 
         $file_path = $request->file_path;
+      
 
         if(empty($request->mobile_numbers) && count($request->contact_group_ids)<1 && empty($file_path))
         {

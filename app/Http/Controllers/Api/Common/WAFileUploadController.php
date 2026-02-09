@@ -92,6 +92,7 @@ class WAFileUploadController extends Controller
         try {
             $validation = \Validator::make($request->all(), [
                 'user_id'    => 'required|exists:users,id',
+                'configuration_id'    => 'required|exists:whats_app_configurations,id',
                 'file_type'    => 'required|in:image,video,audio,document,sticker',
                 'file' => 'required_without:file_url',
                 'file_url' => 'required_without:file',
@@ -171,6 +172,9 @@ class WAFileUploadController extends Controller
                 return response()->json(prepareResult(true, $formatCheck, $error, $this->intime), config('httpcodes.internal_server_error'));
             }
 
+            $wa_config = whatsAppConfiguration($request->configuration_id,$request->user_id);
+           
+
             // Create record
             $waFile = new WhatsAppFile;
             $waFile->user_id = $request->user_id;
@@ -183,19 +187,17 @@ class WAFileUploadController extends Controller
             $waFile->save();
 
             // file upload wa server
-            $wa_config = whatsAppConfiguration($request->configuration_id,$request->user_id);
            
             // Your API Version
-            $apiVersion = @$wa_config->app_version; // Replace with the desired version
-            $phoneNumberId = @$wa_config->sender_number; 
+            $apiVersion = $wa_config->app_version; // Replace with the desired version
+            $phoneNumberId = $wa_config->sender_number; 
             // Your User Access Token
             $userAccessToken = base64_decode($wa_config->access_token); 
-            $appId = @$wa_config->app_id;
+            $appId = $wa_config->app_id;
             
             $contentType = mime_content_type($filePath);
           
-            // Step 1: Upload the media file
-           $response = Http::withToken($userAccessToken)
+            $response = Http::withToken($userAccessToken)
                 ->attach(
                     'file',
                     fopen($filePath, 'r'),
@@ -261,11 +263,11 @@ class WAFileUploadController extends Controller
                     $whats_app_file->user_id
                 );
 
-                $apiVersion     = $wa_config->app_version; // example v19.0
+                $apiVersion     = $wa_config->app_version; 
                 $accessToken    = base64_decode($wa_config->access_token);
                 $phoneNumberId  = $wa_config->sender_number;
 
-                // ✅ Correct URL with phone_number_id
+                // Correct URL with phone_number_id
                 $url = "https://graph.facebook.com/{$apiVersion}/{$whats_app_file->wa_file_id}";
                 
                 $response = Http::withToken($accessToken)
@@ -383,9 +385,9 @@ class WAFileUploadController extends Controller
             $user = User::find($request->user_id);
             $wa_config = whatsAppConfiguration($request->configuration_id, $request->user_id);
 
-            $apiVersion = @$wa_config->app_version;
+            $apiVersion = $wa_config->app_version;
             $userAccessToken = base64_decode($wa_config->access_token);
-            $appId = @$wa_config->app_id;
+            $appId = $wa_config->app_id;
             
             $contentType = mime_content_type($filePath);
             
