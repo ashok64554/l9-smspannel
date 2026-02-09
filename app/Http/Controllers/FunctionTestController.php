@@ -24,6 +24,7 @@ use App\Imports\CampaignImport;
 use App\Models\WhatsAppTemplate;
 use Illuminate\Support\Facades\Redis;
 use App\Models\WhatsAppSendSms;
+use App\Models\WhatsAppFile;
 use App\Models\WhatsAppSendSmsQueue;
 use Illuminate\Support\Facades\Http;
 use App\Models\DlrcodeVender;
@@ -43,6 +44,15 @@ class FunctionTestController extends Controller
     
     public function testFunction(Request $request)
     {
+        $images = WhatsAppFile::get();
+        foreach($images as $image)
+        {
+            $confId = \DB::table('whats_app_configurations')->where('user_id', $image->user_id)->first();
+            $image->configuration_id = @$confId->id;
+            $image->save();
+        }
+        return 'done';
+
         $keys = Redis::keys('switch_pending:*');
         foreach ($keys as $key) {
             Redis::del($key);
