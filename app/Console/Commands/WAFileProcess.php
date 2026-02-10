@@ -45,7 +45,7 @@ class WAFileProcess extends Command
                     'status' => 'Ready-to-complete'
                 ]);
             
-            $submitMsgs = WhatsAppSendSmsQueue::select('whats_app_send_sms_queues.id','whats_app_send_sms_queues.unique_key','whats_app_send_sms_queues.mobile','whats_app_send_sms_queues.submit_date','whats_app_send_sms_queues.whats_app_send_sms_id','whats_app_send_sms_queues.message','whats_app_send_sms.whats_app_configuration_id','whats_app_send_sms.whats_app_template_id','whats_app_send_sms.sender_number','whats_app_configurations.access_token','whats_app_configurations.app_version','whats_app_configurations.marketing_messages_lite_api_status','whats_app_templates.template_language','whats_app_templates.template_name')
+            $submitMsgs = WhatsAppSendSmsQueue::select('whats_app_send_sms_queues.id','whats_app_send_sms_queues.unique_key','whats_app_send_sms_queues.mobile','whats_app_send_sms_queues.submit_date','whats_app_send_sms_queues.whats_app_send_sms_id','whats_app_send_sms_queues.message','whats_app_send_sms.whats_app_configuration_id','whats_app_send_sms.whats_app_template_id','whats_app_send_sms.sender_number','whats_app_configurations.access_token','whats_app_configurations.app_version','whats_app_configurations.marketing_messages_lite_api_status','whats_app_templates.template_language','whats_app_templates.template_name','whats_app_templates.category')
                 ->join('whats_app_send_sms', 'whats_app_send_sms_queues.whats_app_send_sms_id', 'whats_app_send_sms.id')
                 ->join('whats_app_configurations', 'whats_app_send_sms.whats_app_configuration_id', 'whats_app_configurations.id')
                 ->join('whats_app_templates', 'whats_app_send_sms.whats_app_template_id', 'whats_app_templates.id')
@@ -57,13 +57,14 @@ class WAFileProcess extends Command
                 foreach ($submitMsgs as $key => $submitMsg) 
                 {
                     $template_name = $submitMsg->template_name; 
-                    $sender_number = $submitMsg->sender_number; 
+                    $category = $submitMsg->category;  
+                    $sender_number = $submitMsg->sender_number;
                     $appVersion = $submitMsg->app_version;
                     $message = json_decode($submitMsg->message);
                     $access_token = base64_decode($submitMsg->access_token); 
                     $marketing_messages_lite_api_status  = $submitMsg->marketing_messages_lite_api_status;
 
-                    $response = wAMessageSend($access_token, $sender_number, $appVersion, $template_name, $message, $marketing_messages_lite_api_status);
+                    $response = wAMessageSend($access_token, $sender_number, $appVersion, $template_name, $message, $category, $marketing_messages_lite_api_status);
                     \Log::channel('whatsapp')->info($response);
                     
                     if($response['error']==false)
