@@ -3188,9 +3188,48 @@ function waMsgPayloadSample($mobile_number, $template_name, $language, $componen
     return $payload;
 }
 
+function extractExceptionMessage(\Throwable $e): array
+{
+    $raw = $e->getMessage();
+    $message = $raw;
+    $code = 0;
+
+    /**
+     * Extract "message":"...." even if JSON is truncated
+     */
+    if (preg_match('/"message"\s*:\s*"([^"]+)/', $raw, $m)) {
+        $message = $m[1];
+    }
+
+    /**
+     * Extract "code":190 if present
+     */
+    if (preg_match('/"code"\s*:\s*(\d+)/', $raw, $c)) {
+        $code = (int) $c[1];
+    }
+
+    /**
+     * Extract Meta-style (#123456) code if exists
+     */
+    if ($code === 0 && preg_match('/\(#(\d+)\)/', $message, $m2)) {
+        $code = (int) $m2[1];
+    }
+
+    return [
+        [
+            'code' => $code,
+            'title' => $message,
+            'message' => $message,
+            'error_data' => [
+                'details' => $message
+            ]
+        ]
+    ];
+}
+
 function wAMessageSend($access_token, $sender_number, $appVersion, $templateName, $payload, $category=null, $marketing_messages_lite_api_status=null)
 {
-\Log::info($category);
+    \Log::info($category);
     if(!empty($category) && strtolower($category)==strtolower('Marketing') && $marketing_messages_lite_api_status=='ONBOARDED')
     {
         $url = "https://graph.facebook.com/$appVersion/$sender_number/marketing_messages";
@@ -3212,9 +3251,11 @@ function wAMessageSend($access_token, $sender_number, $appVersion, $templateName
             'response' => $response->body()
         ];
     } catch (\Throwable $e) {
+        //\Log::error($e->getMessage());
+        $error = extractExceptionMessage($e);
         return [
             'error' => true,
-            'response' => $e->getMessage()
+            'response' => $error
         ];
     }
 }

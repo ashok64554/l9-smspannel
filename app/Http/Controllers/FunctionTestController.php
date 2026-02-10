@@ -1028,9 +1028,9 @@ Please click below link to reset password.<br>
                     }
                     else
                     {
-                        $submitMsg->error_info = $response;
+                        $submitMsg->error_info = $response['response'];
                         $submitMsg->submit_date = date('Y-m-d H:i:s');
-                        $submitMsg->stat = 'Failed';
+                        $submitMsg->stat = 'failed';
                         $submitMsg->status = 'Completed';
                         $submitMsg->save();
                     }

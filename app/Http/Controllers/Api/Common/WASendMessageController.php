@@ -1429,9 +1429,9 @@ class WASendMessageController extends Controller
                 }
                 else
                 {
-                    $submitMsg->error_info = $response;
+                    $submitMsg->error_info = $response['response'];
                     $submitMsg->submit_date = date('Y-m-d H:i:s');
-                    $submitMsg->stat = 'Failed';
+                    $submitMsg->stat = 'failed';
                     $submitMsg->status = 'Completed';
                     $submitMsg->save();
                 }

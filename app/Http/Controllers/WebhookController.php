@@ -99,7 +99,7 @@ class WebhookController extends Controller
                         case 'failed':
                             $wa_failed_responses[] = [
                                 'response_token' => $getFinalStatus['id'],
-                                'stat' => $getFinalStatus['status'],
+                                'stat' => strtolower($getFinalStatus['status']),
                                 'status' => 'Completed',
                                 'sent' => 1,
                                 'sent_date_time' => date('Y-m-d H:i:s', date($getFinalStatus['timestamp'])),
@@ -128,7 +128,7 @@ class WebhookController extends Controller
 
                             $conversation_id = $getFinalStatus['conversation']['id'] ?? null;
                             $expiration_timestamp = $getFinalStatus['conversation']['expiration_timestamp'] ?? null;
-                            $status = $getFinalStatus['status'] ?? null;
+                            $status = strtolower($getFinalStatus['status']) ?? null;
                             $timestamp = $getFinalStatus['timestamp'] ?? null;
                             $meta_billable = $getFinalStatus['pricing']['billable'] ?? null;
                             $meta_pricing_model = $getFinalStatus['pricing']['pricing_model'] ?? null;
@@ -157,7 +157,7 @@ class WebhookController extends Controller
                         case 'delivered':
                             $wa_delivered_responses[] = [
                                 'response_token' => $getFinalStatus['id'],
-                                'stat' => $getFinalStatus['status'],
+                                'stat' => strtolower($getFinalStatus['status']),
                                 'delivered' => 1,
                                 'delivered_date_time' => date('Y-m-d H:i:s', date($getFinalStatus['timestamp'])),
                             ];
@@ -171,7 +171,7 @@ class WebhookController extends Controller
                         case 'read':
                             $wa_read_responses[] = [
                                 'response_token' => $getFinalStatus['id'],
-                                'stat' => $getFinalStatus['status'],
+                                'stat' => strtolower($getFinalStatus['status']),
                                 'read' => 1,
                                 'read_date_time' => date('Y-m-d H:i:s', date($getFinalStatus['timestamp'])),
                             ];
@@ -185,7 +185,7 @@ class WebhookController extends Controller
                         case 'payment':
                             $wa_read_responses[] = [
                                 'response_token' => $getFinalStatus['id'],
-                                'stat' => $getFinalStatus['status'],
+                                'stat' => strtolower($getFinalStatus['status']),
                                 'read' => 1,
                                 'read_date_time' => date('Y-m-d H:i:s', date($getFinalStatus['timestamp'])),
                             ];

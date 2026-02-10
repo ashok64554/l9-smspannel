@@ -1779,9 +1779,10 @@ class ApiGetController extends Controller
             }
             else
             {
+                $response = $response['response'];
                 $waQueus->error_info = $response;
                 $waQueus->submit_date = date('Y-m-d H:i:s');
-                $waQueus->stat = 'Failed';
+                $waQueus->stat = 'failed';
                 $waQueus->status = 'Completed';
                 $waQueus->save();
             }

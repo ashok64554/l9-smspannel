@@ -210,7 +210,7 @@ class WAFileUploadController extends Controller
             if($response->ok())
             {
                 $uploadData = $response->json();
-                $waFile->wa_file_id = $waFile->id;
+                $waFile->wa_file_id = $response['id'];
                 $waFile->save();
             }
 

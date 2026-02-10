@@ -2131,7 +2131,7 @@ class ReportController extends Controller
             $export->where('user_id', auth()->id());
         }
    
-        $return = $export->get();
+        $return = $export->get()->makeHidden(['disk']);
         return response()->json(prepareResult(false, $return, trans('translate.fetched_records'), $this->intime), config('httpcodes.success'));    
     }
 
