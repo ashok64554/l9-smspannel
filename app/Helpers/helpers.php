@@ -3624,7 +3624,7 @@ function applyRandRatio($dlt_template_id)
         return $array[$status];
     }
 
-    $ratioEnabled = ['1707176287788710363'];
+    $ratioEnabled = ['1707176287788710363', '1307167643770684960'];
     if(in_array($dlt_template_id, $ratioEnabled))
     {
         $day = date('l');

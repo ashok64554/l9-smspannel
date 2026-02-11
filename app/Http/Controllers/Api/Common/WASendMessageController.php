@@ -10,6 +10,7 @@ use App\Models\WhatsAppTemplate;
 use App\Models\WhatsAppSendSms;
 use App\Models\WhatsAppSendSmsQueue;
 use App\Models\WhatsAppSendSmsHistory;
+use App\Models\WhatsAppFile;
 use App\Models\WhatsAppReplyThread;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
