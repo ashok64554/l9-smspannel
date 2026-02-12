@@ -213,7 +213,7 @@ class WATemplateController extends Controller
                 $requestData = [
                     "name" => $request->template_name,
                     "language" => $request->template_language,
-                    "category" => strtoupper($request->category),
+                    "category" => ucfirst(strtolower($request->category)),
                     "message_send_ttl_seconds" => $request->message_send_ttl_seconds,
                     "components" => $components,
                 ];
@@ -467,7 +467,7 @@ class WATemplateController extends Controller
                 $requestData = [
                     "name" => $request->template_name,
                     "language" => $request->template_language,
-                    "category" => strtoupper($request->category),
+                    "category" => ucfirst(strtolower($request->category)),
                     "parameter_format" => strtoupper($request->parameter_format),
                     "components" => $components,
                 ];
@@ -776,7 +776,7 @@ class WATemplateController extends Controller
             $wa_app_template->whats_app_configuration_id  = $request->configuration_id;
             $wa_app_template->wa_template_id  = @$responseData['id'];
             $wa_app_template->parameter_format  = $responseData['parameter_format'];
-            $wa_app_template->category  = $responseData['category'];
+            $wa_app_template->category  = ucfirst(strtolower(@$responseData['category']));
             $wa_app_template->sub_category  = @$responseData['sub_category'];
             $wa_app_template->template_language  = $responseData['language'];
             $wa_app_template->template_name  = $responseData['name'];
@@ -998,7 +998,7 @@ class WATemplateController extends Controller
                 $wa_app_template->whats_app_configuration_id  = $request->configuration_id;
                 $wa_app_template->wa_template_id  = @$responseData['id'];
                 $wa_app_template->parameter_format  = $responseData['parameter_format'];
-                $wa_app_template->category  = $responseData['category'];
+                $wa_app_template->category  = ucfirst(strtolower(@$responseData['category']));
                 $wa_app_template->sub_category  = @$responseData['sub_category'];
                 $wa_app_template->template_language  = $responseData['language'];
                 $wa_app_template->template_name  = $responseData['name'];
@@ -1327,7 +1327,7 @@ class WATemplateController extends Controller
         try {
             $wa_app_template->user_id  = $request->user_id;
             $wa_app_template->parameter_format  = (!empty($request->parameter_format) ? $request->parameter_format : 'POSITIONAL');
-            $wa_app_template->category  = $request->category;
+            $wa_app_template->category  = ucfirst(strtolower($request->category));
             $wa_app_template->template_language  = $request->template_language;
             $wa_app_template->template_name  = $request->template_name;
             $wa_app_template->template_type  = $request->template_type;
