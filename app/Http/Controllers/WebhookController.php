@@ -338,6 +338,16 @@ class WebhookController extends Controller
                             'current_limit' => $current_limit,
                         ]);
                     }
+                    elseif($getStatus['event']=='MM_LITE_TERMS_SIGNED')
+                    {
+                        $waba_id = @$getStatus['waba_info']['waba_id'];
+                        $marketing_messages_lite_api_status = 'ONBOARDED';
+                        \DB::table('whats_app_configurations')
+                        ->where('waba_id', $waba_id)
+                        ->update([
+                            'marketing_messages_lite_api_status' => $marketing_messages_lite_api_status,
+                        ]);
+                    }
                     else
                     {
                         \Log::info('whatsapp_response_from_webhook log else');
