@@ -266,6 +266,7 @@ Route::namespace('App\Http\Controllers\Api\Common')->group(function () {
             Route::post('wa-pull-all-template', 'waPullAllTemplate')->name('wa-pull-all-template');
             Route::get('wa-generate-payload/{whats_app_template_id}/{user_id}', 'waGeneratePayload')->name('wa-generate-payload');
             Route::get('download-wa-sample-file/{whats_app_template_id}/{type?}', 'downloadWASampleFile')->name('download-wa-sample-file');
+            Route::get('wa-template-category-sync/{whats_app_configuration_id}', 'waTemplateCategorySync')->name('wa-template-category-sync');
         });
         
         Route::controller(WAFileUploadController::class)->group(function () {

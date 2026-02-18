@@ -44,6 +44,7 @@ class FunctionTestController extends Controller
     
     public function testFunction(Request $request)
     {
+        dd('disabled');
         $images = WhatsAppFile::get();
         foreach($images as $image)
         {
