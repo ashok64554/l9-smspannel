@@ -587,7 +587,8 @@ class WASendMessageController extends Controller
                                     if(!empty($number['media_var_1']))
                                     {
                                         $titleOrFileName = $number['caption_var_1'];
-                                        $header = prapareWAComponent('header', $number['media_var_1'], $parameter_format, null, $template_type, $media_type, $titleOrFileName,$latitude,$longitude,$location_name,$location_address);
+                                        $wa_file_id = WhatsAppFile::where('file_path', 'LIKE', '%' . basename(parse_url($number['media_var_1'], PHP_URL_PATH)))->value('wa_file_id');
+                                        $header = prapareWAComponent('header', $number['media_var_1'], $parameter_format, null, $template_type, $media_type, $titleOrFileName,$latitude,$longitude,$location_name,$location_address,$wa_file_id);
                                     }
                                     else
                                     {
