@@ -72,6 +72,10 @@ class Kernel extends ConsoleKernel
             ->everyFiveMinutes()
             ->timezone(env('TIME_ZONE', 'Asia/Calcutta'));
 */
+
+        $schedule->job(new \App\Jobs\BuildDailySmsConsumption(now()->subDay()))
+            ->dailyAt('05:30')
+            ->timezone(env('TIME_ZONE', 'Asia/Calcutta'));
     }
 
     protected function commands()

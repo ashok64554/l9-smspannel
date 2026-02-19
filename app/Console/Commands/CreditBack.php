@@ -19,7 +19,8 @@ class CreditBack extends Command
     protected $signature = 'credit:back';
 
     protected $description = 'Command description';
-public function handle()
+    
+    public function handle()
     {
         $this->archiveYesterdayCampaigns(5000);
         return Command::SUCCESS;

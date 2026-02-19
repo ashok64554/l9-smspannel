@@ -163,6 +163,17 @@ Thank you for your continued trust in our services.
                 'route_path' => 'credit-info',
             ],
             [
+                'notification_for' => 'total-credit-used',
+                'mail_subject' => null,
+                'mail_body' => null,
+                'notification_subject' => 'Total Submission & Credits Utilization',
+                'notification_body' => 'We would like to inform you that {{no_of_credit}} credits were used through {{channel_name}} on {{date}}, for {{no_of_submission}} message submissions.',
+                'custom_attributes' => '{{no_of_credit}}, {{date}}, {{channel_name}}, {{no_of_submission}}',
+                'save_to_database' => true,
+                'status_code' => 'success',
+                'route_path' => 'credit-info',
+            ],
+            [
                 'notification_for' => 'credit-requested-by-user',
                 'mail_subject' => null,
                 'mail_body' => null,
