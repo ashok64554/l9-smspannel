@@ -431,7 +431,7 @@ class WAConfigurationController extends Controller
             $getConfInfo->display_phone_number = $json_decode['display_phone_number'];
             $getConfInfo->display_phone_number_req = justNumber($json_decode['display_phone_number']);
             $getConfInfo->verified_name = $json_decode['verified_name'];
-            $getConfInfo->code_verification_status = $json_decode['code_verification_status'];
+            //$getConfInfo->code_verification_status = $json_decode['code_verification_status'];
             $getConfInfo->quality_rating = $json_decode['quality_rating'];
             $getConfInfo->platform_type = $json_decode['platform_type'];
             $getConfInfo->last_quality_checked = date('Y-m-d H:i:s');

@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use Cache;
 use App\Helpers\ChatBotEngine;
+use App\Jobs\SyncWhatsAppTemplatesJob;
 
 class WebhookController extends Controller
 {
@@ -327,6 +328,21 @@ class WebhookController extends Controller
                             'wa_status' => $status,
                             'status' => (($status=='APPROVED') ? '1' : '3')
                         ]);
+                        SyncWhatsAppTemplatesJob::dispatch($message_template_id);
+                    }
+                    elseif($getStatusField=='template_category_update')
+                    {
+                        $message_template_id = @$getStatus['message_template_id'];
+                        $category = $getStatus['new_category'];
+                        \DB::table('whats_app_templates')
+                        ->where('wa_template_id', $message_template_id)
+                        ->update([
+                            'category' => ucfirst(strtolower($category)),
+                            'updated_at' => now()
+                        ]);
+                        \Log::info('template_category_update');
+                        \Log::info('json_decode');
+                        \Log::info(@$json_decode);
                     }
                     elseif($getStatusField=='phone_number_quality_update')
                     {
@@ -336,6 +352,16 @@ class WebhookController extends Controller
                         ->where('display_phone_number_req', $display_phone_number)
                         ->update([
                             'current_limit' => $current_limit,
+                        ]);
+                    }
+                    elseif($getStatus['event']=='MM_LITE_TERMS_SIGNED')
+                    {
+                        $waba_id = @$getStatus['waba_info']['waba_id'];
+                        $marketing_messages_lite_api_status = 'ONBOARDED';
+                        \DB::table('whats_app_configurations')
+                        ->where('waba_id', $waba_id)
+                        ->update([
+                            'marketing_messages_lite_api_status' => $marketing_messages_lite_api_status,
                         ]);
                     }
                     else

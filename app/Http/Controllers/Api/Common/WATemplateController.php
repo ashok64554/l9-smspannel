@@ -213,7 +213,7 @@ class WATemplateController extends Controller
                 $requestData = [
                     "name" => $request->template_name,
                     "language" => $request->template_language,
-                    "category" => strtoupper($request->category),
+                    "category" => ucfirst(strtolower($request->category)),
                     "message_send_ttl_seconds" => $request->message_send_ttl_seconds,
                     "components" => $components,
                 ];
@@ -467,7 +467,7 @@ class WATemplateController extends Controller
                 $requestData = [
                     "name" => $request->template_name,
                     "language" => $request->template_language,
-                    "category" => strtoupper($request->category),
+                    "category" => ucfirst(strtolower($request->category)),
                     "parameter_format" => strtoupper($request->parameter_format),
                     "components" => $components,
                 ];
@@ -646,10 +646,23 @@ class WATemplateController extends Controller
         $validation = \Validator::make($request->all(), [
             'user_id'    => 'required|exists:users,id',
             'configuration_id' => 'required|exists:whats_app_configurations,id',
-            'wa_template_id'=> 'required_without:wa_template_name',
-            'wa_template_name'=> 'required_without:wa_template_id',
+            'wa_template_id' => [
+                'nullable',
+                'required_without:wa_template_name',
+                'exists:whats_app_templates,wa_template_id'
+            ],
+            'wa_template_name' => [
+                'nullable',
+                'required_without:wa_template_id',
+                'exists:whats_app_templates,template_name'
+            ],
     
         ]);
+
+        if (empty($request->wa_template_id) && empty($request->wa_template_name)) {
+            $validation->errors()->add('wa_template', 'Either Template ID or Template Name is required.');
+            return response()->json(prepareResult(true, $validation->messages(), trans('translate.validation_failed'), $this->intime), config('httpcodes.bad_request'));
+        }
         
         if ($validation->fails()) {
             return response()->json(prepareResult(true, $validation->messages(), trans('translate.validation_failed'), $this->intime), config('httpcodes.bad_request'));
@@ -657,10 +670,6 @@ class WATemplateController extends Controller
         try {
 
             $user_id = (!empty($request->user_id) ? $request->user_id : auth()->id());
-
-            $checkDuplicate = WhatsAppTemplate::where('user_id', $user_id)
-                ->where('wa_template_id', $request->wa_template_id)
-                ->first();
             
             $wa_config = whatsAppConfiguration($request->configuration_id, $user_id);
             if(!$wa_config)
@@ -699,15 +708,32 @@ class WATemplateController extends Controller
 
                 $responseData = json_decode($response->getBody(), true);
 
+                $is_found = false;
                 //return $responseData;
                 if(sizeof($responseData['data'])>0)
                 {
-                    $responseData = $responseData['data'][0];
+                    foreach ($responseData['data'] as $key => $value) 
+                    {
+                        if($value['name']==$request->wa_template_name)
+                        {
+                            $responseData = $value;
+                            $is_found = true;
+                            break;
+                        }
+                    }
+                    if($is_found==false)
+                    {
+                        return response(prepareResult(false, trans('translate.no_records_found'),trans('translate.no_records_found')), config('httpcodes.not_found'));
+                    }
                 }
                 else
                 {
                     return response(prepareResult(false, trans('translate.no_records_found'),trans('translate.no_records_found')), config('httpcodes.not_found'));  
                 }
+            }
+            if(empty($responseData))
+            {
+                return response(prepareResult(false, trans('translate.no_records_found'),trans('translate.no_records_found')), config('httpcodes.not_found'));
             }
 
             $status = (($responseData['status']=='APPROVED') ? '1' : '0');
@@ -776,7 +802,7 @@ class WATemplateController extends Controller
             $wa_app_template->whats_app_configuration_id  = $request->configuration_id;
             $wa_app_template->wa_template_id  = @$responseData['id'];
             $wa_app_template->parameter_format  = $responseData['parameter_format'];
-            $wa_app_template->category  = $responseData['category'];
+            $wa_app_template->category  = ucfirst(strtolower(@$responseData['category']));
             $wa_app_template->sub_category  = @$responseData['sub_category'];
             $wa_app_template->template_language  = $responseData['language'];
             $wa_app_template->template_name  = $responseData['name'];
@@ -998,7 +1024,7 @@ class WATemplateController extends Controller
                 $wa_app_template->whats_app_configuration_id  = $request->configuration_id;
                 $wa_app_template->wa_template_id  = @$responseData['id'];
                 $wa_app_template->parameter_format  = $responseData['parameter_format'];
-                $wa_app_template->category  = $responseData['category'];
+                $wa_app_template->category  = ucfirst(strtolower(@$responseData['category']));
                 $wa_app_template->sub_category  = @$responseData['sub_category'];
                 $wa_app_template->template_language  = $responseData['language'];
                 $wa_app_template->template_name  = $responseData['name'];
@@ -1327,7 +1353,7 @@ class WATemplateController extends Controller
         try {
             $wa_app_template->user_id  = $request->user_id;
             $wa_app_template->parameter_format  = (!empty($request->parameter_format) ? $request->parameter_format : 'POSITIONAL');
-            $wa_app_template->category  = $request->category;
+            $wa_app_template->category  = ucfirst(strtolower($request->category));
             $wa_app_template->template_language  = $request->template_language;
             $wa_app_template->template_name  = $request->template_name;
             $wa_app_template->template_type  = $request->template_type;
@@ -1724,5 +1750,66 @@ class WATemplateController extends Controller
             \Log::error($e);
             return response()->json(prepareResult(true, $e->getMessage(), trans('translate.something_went_wrong'), $this->intime), config('httpcodes.internal_server_error'));
         }
+    }
+
+    public function waTemplateCategorySync($whats_app_configuration_id)
+    {
+        $getConfs = \DB::table('whats_app_configurations')->select('id','access_token','waba_id','app_version');
+
+        if(!empty($whats_app_configuration_id))
+        {
+            $getConfs->where('id', $whats_app_configuration_id);
+        }
+        $getConfs = $getConfs->get();
+
+        foreach ($getConfs as $key => $wa_config) 
+        {
+            $configuration_id = $wa_config->id;
+            $user_id = $wa_config->user_id;
+
+            $accessToken = base64_decode($wa_config->access_token);
+            $waba_id = $wa_config->waba_id;
+            $apiVersion = (!empty($wa_config->app_version) ? $wa_config->app_version : env('FB_APP_VERSION')); 
+
+            $url = "https://graph.facebook.com/{$apiVersion}/{$waba_id}/message_templates";
+            $client = new Client();
+            $endoint = "https://graph.facebook.com/{$apiVersion}/{$waba_id}/message_templates";
+            //\Log::info($endoint);
+            $response = $client->get($endoint, [
+                'query' => [
+                    'access_token' => $accessToken,
+                    'limit' => env('WA_PAGE_LIMIT', 25)
+                ],
+            ]);
+
+            $allTemplates = json_decode($response->getBody(), true);
+            if(sizeof($allTemplates['data'])>0)
+            {
+                foreach ($allTemplates['data'] as $key => $value) 
+                {
+                    if(!empty(@$value['status']))
+                    {
+                        $tempUpdate = WhatsAppTemplate::where('wa_template_id', $value['id'])->first();
+                        if(!$tempUpdate)
+                        {
+                            \Log::error('template not found '.$value['id']);
+                            continue;
+                        }
+                        $status = (($value['status']=='APPROVED') ? '1' : '0');
+
+                        $tempUpdate->category = ucfirst(strtolower($value['category']));
+                        $tempUpdate->status = $status;
+                        $tempUpdate->updated_at = now();
+                        $tempUpdate->save();
+                    }
+                }
+            }
+            if(array_key_exists('next', $allTemplates['paging']))
+            {
+                waPullAllTemplatePaging($accessToken, $user_id, $configuration_id, $allTemplates['paging']['next'], $allTemplates['paging']['cursors']['after']);
+            }
+        }
+
+        return response()->json(prepareResult(false, 'Done', trans('translate.fetched_records'), $this->intime), config('httpcodes.success'));
     }
 }

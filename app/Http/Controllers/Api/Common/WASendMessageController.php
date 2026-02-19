@@ -10,6 +10,7 @@ use App\Models\WhatsAppTemplate;
 use App\Models\WhatsAppSendSms;
 use App\Models\WhatsAppSendSmsQueue;
 use App\Models\WhatsAppSendSmsHistory;
+use App\Models\WhatsAppFile;
 use App\Models\WhatsAppReplyThread;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -464,7 +465,7 @@ class WASendMessageController extends Controller
                 $countFailed = 0;
                 $batch_id = \Uuid::generate(4);
 
-                $batchTimeStart = ($nkey==0) ? Carbon::parse($batchTimeStart)->addMinutes(0)->toDateTimeString() : Carbon::parse($batchTimeStart)->addMinutes(2)->toDateTimeString();
+                $batchTimeStart = ($nkey==0) ? Carbon::parse($batchTimeStart)->addMinutes(0)->toDateTimeString() : Carbon::parse($batchTimeStart)->addSeconds(30)->toDateTimeString();
 
                 $batchArr[] = [
                     'user_id' => $userInfo->id,
